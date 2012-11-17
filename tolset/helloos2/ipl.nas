@@ -37,10 +37,10 @@ entry:
 
 		MOV		SI,msg
 putloop:
-		MOV		AL,[SI]			; 把SI地址的1个字节的内容读入AL中
-		ADD		SI,1			; 给SI加1
-		CMP		Al,0 			; CMP：compare，相等
-		JE		fin				; 相等的话跳到fin
+		MOV		AL,[SI]
+		ADD		SI,1			; 把SI地址的1个字节的内容读入AL中
+		CMP		AL,0
+		JE		fin
 		MOV		AH,0x0e			; 显示一个文字
 		MOV		BX,15			; 指定字符颜色
 		INT		0x10			; 调用显卡BIOS,INT：interrupt，中断命令
@@ -49,14 +49,12 @@ fin:
 		HLT						; 让CPU停止，等待指令,halt简称
 		JMP		fin				; 无限循环
 
-; 信息显示部分
 msg:
-
 		DB		0x0a, 0x0a		; 2个换行
 		DB		"hello, world"
 		DB		0x0a			; 换行
 		DB		0
 
-		RESB	0x1fe-$			; 填写0x00,直到0x001fe,总计378个
+		RESB	0x7dfe-$		; 填写0x00,直到0x001fe,总计378个
 
 		DB		0x55, 0xaa
