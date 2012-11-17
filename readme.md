@@ -5,7 +5,12 @@ Link:[豆瓣读书链接](http://book.douban.com/subject/11530329/)
 Day2
 ----------------------------
 今天周六，早上起来已经中午了=.=
+模拟器使用方法：\tolset\helloos2\!cons_nt.bat
+>asm
+>makeimg
+>run
 
+// 以下是备忘
 CPU 16位寄存器
 AX——accumulator，累加寄存器
 CX——counter，计数寄存器
