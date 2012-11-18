@@ -1,5 +1,7 @@
-; hello-os
+; haribote-ipl
 ; TAB=4
+
+CYLS 	EQU 	10				; like #define in C, CYLS is cylinders
 
 		ORG		0x7c00			; 指明程序的装载地址
 
@@ -7,7 +9,7 @@
 
 		JMP		entry
 		DB		0x90
-		DB		"HELLOIPL"		; 启动区的名称
+		DB		"HARIBOTE"		; 启动区的名称
 		DW		512				; 每个扇区的大小
 		DB		1				; size of cluster
 		DW		1				; FAT的起始位置
@@ -22,7 +24,7 @@
 		DD		2880			; 重写一次磁盘的大小
 		DB		0,0,0x29		; 固定
 		DD		0xffffffff		; 卷标号码
-		DB		"HELLO-OS   "	; 磁盘的名称
+		DB		"HARIBOTEOS "	; 磁盘的名称
 		DB		"FAT12   "		; 磁盘格式名称
 		RESB	18				; 空出18个字节
 
@@ -33,8 +35,48 @@ entry:
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
-		MOV		ES,AX
+; 读磁盘
+		MOV 	AX,0x0820
+		MOV 	ES,AX
+		MOV 	CH,0 			; 柱面0
+		MOV 	DH,0 			; 磁头0
+		MOV 	CL,2 			; 扇区2
+readloop:
+		MOV 	SI,0 			; 记录失败次数的寄存器
+retry:
+		MOV 	AH,0x02 		; AH=0x02 : 读盘
+		MOV 	AL,1 			; 1个扇区
+		MOV 	BX,0
+		MOV 	DL,0x00 		; A驱动器
+		INT 	0x13 			; 调用磁盘BIOS
+		JNC		next			; 没出错就跳到fin
+		ADD		SI,1 			; SI+1
+		CMP		SI,5 			; 比较SI和5
+		JAE		error			; SI>=5时，跳转到error
+		MOV 	AH,0x00
+		MOV 	DL,0x00 		; A驱动器
+		INT 	0x13 			; 重置驱动器
+		JMP 	retry
+next:
+		MOV 	AX,ES 			; 把内存地址后移0x200
+		ADD 	AX,0x0020
+		MOV 	ES,AX			; 
+		ADD		CL,1 			;
+		CMP 	CL,18
+		JBE 	readloop 		; if cl <= 18 then readloop
+		MOV 	CL,1
+		ADD 	DH,2
+		CMP		DH,2
+		JB 		readloop		; if DH < 2 then readloop
+		MOV 	DH,0
+		ADD 	CH,1
+		CMP 	CH,CYLS
+		JB 		readloop 		; if CH < CYLS then readloop
+fin:
+		HLT
+		JMP 	fin
 
+error:
 		MOV		SI,msg
 putloop:
 		MOV		AL,[SI]
@@ -51,7 +93,7 @@ fin:
 
 msg:
 		DB		0x0a, 0x0a		; 2个换行
-		DB		"hello, world"
+		DB		"load error"
 		DB		0x0a			; 换行
 		DB		0
 
