@@ -31,7 +31,7 @@ CYLS 	EQU 	10				; like #define in C, CYLS is cylinders
 ; 程序主体
 
 entry:
-		MOV		AX,0			; 初始化寄存器，MOV即为MOVE，类似COPY的功能，虽然不太一样
+		MOV		AX,0			; 初始化寄存器
 		MOV		SS,AX
 		MOV		SP,0x7c00
 		MOV		DS,AX
@@ -58,23 +58,23 @@ retry:
 		INT 	0x13 			; 重置驱动器
 		JMP 	retry
 next:
-		MOV 	AX,ES 			; 把内存地址后移0x200
-		ADD 	AX,0x0020
-		MOV 	ES,AX			; 
-		ADD		CL,1 			;
-		CMP 	CL,18
-		JBE 	readloop 		; if cl <= 18 then readloop
-		MOV 	CL,1
-		ADD 	DH,2
+		MOV		AX,ES			; ƒAƒhƒŒƒX‚ð0x200i‚ß‚é
+		ADD		AX,0x0020
+		MOV		ES,AX			; ADD ES,0x020 ‚Æ‚¢‚¤–½—ß‚ª‚È‚¢‚Ì‚Å‚±‚¤‚µ‚Ä‚¢‚é
+		ADD		CL,1			; CL‚É1‚ð‘«‚·
+		CMP		CL,18			; CL‚Æ18‚ð”äŠr
+		JBE		readloop		; CL <= 18 ‚¾‚Á‚½‚çreadloop‚Ö
+		MOV		CL,1
+		ADD		DH,1
 		CMP		DH,2
-		JB 		readloop		; if DH < 2 then readloop
-		MOV 	DH,0
-		ADD 	CH,1
-		CMP 	CH,CYLS
-		JB 		readloop 		; if CH < CYLS then readloop
-fin:
-		HLT
-		JMP 	fin
+		JB		readloop		; DH < 2 ‚¾‚Á‚½‚çreadloop‚Ö
+		MOV		DH,0
+		ADD		CH,1
+		CMP		CH,CYLS
+		JB		readloop		; CH < CYLS ‚¾‚Á‚½‚çreadloop‚Ö
+
+		MOV		[0x0ff0],CH
+		JMP 	0xc200
 
 error:
 		MOV		SI,msg
