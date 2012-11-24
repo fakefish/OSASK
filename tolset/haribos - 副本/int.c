@@ -1,5 +1,6 @@
 
 #include "bootpack.h"
+#include <stdio.h>
 
 // PIC的初始化
 void init_pic(void)
@@ -22,15 +23,19 @@ void init_pic(void)
 
 	return;
 }
+
+#define PORT_KEYDAT		0x0060
+
+struct FIFO8 keyfifo;
+
 void inthandler21(int *esp) 
 // 来自PS/2键盘的中断 IRQ1
 {
-	struct BOOTINFO *binfo = (struct BOOTINFO *) ADR_BOOTINFO;
-	boxfill8(binfo->vram, binfo->scrnx, COL8_000000, 0, 0, 32 * 8 - 1, 15);
-	putfonts8_asc(binfo->vram, binfo->scrnx, 0, 0, COL8_FFFFFF, "INT 21 (IRQ-1) : PS/2 keyboard");
-	for (;;) {
-		io_hlt();
-	}
+	unsigned char data;
+	io_out8(PIC0_OCW2, 0x61);
+	data = io_in8(PORT_KEYDAT);
+	fifo8_put(&keyfifo, data);
+	return;
 }
 
 void inthandler2c(int *esp)
