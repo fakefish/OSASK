@@ -1,49 +1,49 @@
 ; haribote-os boot asm
 ; TAB=4
 
-BOTPAK	EQU		0x00280000		; bootpack‚Ìƒ[ƒhæ
-DSKCAC	EQU		0x00100000		; ƒfƒBƒXƒNƒLƒƒƒbƒVƒ…‚ÌêŠ
-DSKCAC0	EQU		0x00008000		; ƒfƒBƒXƒNƒLƒƒƒbƒVƒ…‚ÌêŠiƒŠƒAƒ‹ƒ‚[ƒhj
+BOTPAK	EQU		0x00280000		; 
+DSKCAC	EQU		0x00100000		; 
+DSKCAC0	EQU		0x00008000		; 
 
-; BOOT_INFOŠÖŒW
-CYLS	EQU		0x0ff0			; ƒu[ƒgƒZƒNƒ^‚ªÝ’è‚·‚é
+; 有关BOOT-INFO
+CYLS	EQU		0x0ff0			; 设定启动区
 LEDS	EQU		0x0ff1
-VMODE	EQU		0x0ff2			; F”‚ÉŠÖ‚·‚éî•ñB‰½ƒrƒbƒgƒJƒ‰[‚©H
-SCRNX	EQU		0x0ff4			; ‰ð‘œ“x‚ÌX
-SCRNY	EQU		0x0ff6			; ‰ð‘œ“x‚ÌY
-VRAM	EQU		0x0ff8			; ƒOƒ‰ƒtƒBƒbƒNƒoƒbƒtƒ@‚ÌŠJŽn”Ô’n
+VMODE	EQU		0x0ff2			; 关于颜色数目的信息。颜色的位数
+SCRNX	EQU		0x0ff4			; screen X
+SCRNY	EQU		0x0ff6			; screen Y
+VRAM	EQU		0x0ff8			; 图像缓冲区的开始地址
 
-		ORG		0xc200			; ‚±‚ÌƒvƒƒOƒ‰ƒ€‚ª‚Ç‚±‚É“Ç‚Ýž‚Ü‚ê‚é‚Ì‚©
+		ORG		0xc200			; 
 
-; ‰æ–Êƒ‚[ƒh‚ðÝ’è
 
-		MOV		AL,0x13			; VGAƒOƒ‰ƒtƒBƒbƒNƒXA320x200x8bitƒJƒ‰[
+
+		MOV		AL,0x13			; VGA显卡， 320x200x8位彩色
 		MOV		AH,0x00
 		INT		0x10
-		MOV		BYTE [VMODE],8	; ‰æ–Êƒ‚[ƒh‚ðƒƒ‚‚·‚éiCŒ¾Œê‚ªŽQÆ‚·‚éj
+		MOV		BYTE [VMODE],8	; 记录画面模式
 		MOV		WORD [SCRNX],320
 		MOV		WORD [SCRNY],200
 		MOV		DWORD [VRAM],0x000a0000
 
-; ƒL[ƒ{[ƒh‚ÌLEDó‘Ô‚ðBIOS‚É‹³‚¦‚Ä‚à‚ç‚¤
+; 用BIOS取得键盘上各种LED指示灯的状态
 
 		MOV		AH,0x02
 		INT		0x16 			; keyboard BIOS
 		MOV		[LEDS],AL
 
-; PIC‚ªˆêØ‚ÌŠ„‚èž‚Ý‚ðŽó‚¯•t‚¯‚È‚¢‚æ‚¤‚É‚·‚é
-;	ATŒÝŠ·‹@‚ÌŽd—l‚Å‚ÍAPIC‚Ì‰Šú‰»‚ð‚·‚é‚È‚çA
-;	‚±‚¢‚Â‚ðCLI‘O‚É‚â‚Á‚Ä‚¨‚©‚È‚¢‚ÆA‚½‚Ü‚Éƒnƒ“ƒOƒAƒbƒv‚·‚é
-;	PIC‚Ì‰Šú‰»‚Í‚ ‚Æ‚Å‚â‚é
+; PIC关闭一切中断
+;	根据AT兼容机的规格，如果要初始化PIC,
+;	必须在CLI之前进行，否则有时会挂起
+;	随后进行PIC的初始化
 
 		MOV		AL,0xff
 		OUT		0x21,AL
-		NOP						; OUT–½—ß‚ð˜A‘±‚³‚¹‚é‚Æ‚¤‚Ü‚­‚¢‚©‚È‚¢‹@Ží‚ª‚ ‚é‚ç‚µ‚¢‚Ì‚Å
+		NOP						; 如果连续执行OUT指令，有些机种会无法正常运行
 		OUT		0xa1,AL
 
-		CLI						; ‚³‚ç‚ÉCPUƒŒƒxƒ‹‚Å‚àŠ„‚èž‚Ý‹ÖŽ~
+		CLI						; 禁止CPU级别的中断
 
-; CPU‚©‚ç1MBˆÈã‚Ìƒƒ‚ƒŠ‚ÉƒAƒNƒZƒX‚Å‚«‚é‚æ‚¤‚ÉAA20GATE‚ðÝ’è
+; 为了让CPU能够访问1MB以上的内存空间，设定A20GATE
 
 		CALL	waitkbdout
 		MOV		AL,0xd1
@@ -53,18 +53,18 @@ VRAM	EQU		0x0ff8			; ƒOƒ‰ƒtƒBƒbƒNƒoƒbƒtƒ@‚ÌŠJŽn”Ô’n
 		OUT		0x60,AL
 		CALL	waitkbdout
 
-; ƒvƒƒeƒNƒgƒ‚[ƒhˆÚs
+; 切换到保护模式
 
-[INSTRSET "i486p"]				; 486‚Ì–½—ß‚Ü‚ÅŽg‚¢‚½‚¢‚Æ‚¢‚¤‹Lq
+[INSTRSET "i486p"]				; “想要使用486指令”的叙述
 
-		LGDT	[GDTR0]			; Žb’èGDT‚ðÝ’è
+		LGDT	[GDTR0]			; 设定临时GDT
 		MOV		EAX,CR0
-		AND		EAX,0x7fffffff	; bit31‚ð0‚É‚·‚éiƒy[ƒWƒ“ƒO‹ÖŽ~‚Ì‚½‚ßj
-		OR		EAX,0x00000001	; bit0‚ð1‚É‚·‚éiƒvƒƒeƒNƒgƒ‚[ƒhˆÚs‚Ì‚½‚ßj
+		AND		EAX,0x7fffffff	; 设bit31为0 
+		OR		EAX,0x00000001	; 设bit0为1
 		MOV		CR0,EAX
 		JMP		pipelineflush
 pipelineflush:
-		MOV		AX,1*8			;  “Ç‚Ý‘‚«‰Â”\ƒZƒOƒƒ“ƒg32bit
+		MOV		AX,1*8			;  可读写的段 32bit
 		MOV		DS,AX
 		MOV		ES,AX
 		MOV		FS,AX
