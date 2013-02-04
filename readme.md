@@ -2,7 +2,9 @@
 ============================
 Link:[豆瓣图书链接](http://book.douban.com/subject/11530329/)
 
-运行方式：打开!cons_nt.bat，输入make run就好了
+运行方式：运行tolset\haribos\!cons_nt.bat，输入make run就好了
+
+期末暂停
 
 Day8
 ----------------------------
